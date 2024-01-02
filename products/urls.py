@@ -3,5 +3,6 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 urlpatterns = [
-    path('products/', views.get_all_products, name='products'),
+    path('products/', views.product_list, name='products'),
+    path('products/<int:pk>/', views.product_detail, name='product-detail'),
 ]
