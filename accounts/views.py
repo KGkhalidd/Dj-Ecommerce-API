@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .serializers import SignUpSerializer, UserSerializer
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['POST'])
 def register(request):
@@ -21,3 +22,11 @@ def register(request):
         else:
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# This endpoint returns the details of the currently authenticated user.
+# It requires the user to be authenticated (must provide a valid authentication token in their request).
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_info(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
