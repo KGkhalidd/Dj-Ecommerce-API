@@ -31,3 +31,15 @@ def product_create(request):
         serializer.save(user=request.user)
         return Response({'message': 'Product was created successfully!', 'data': serializer.data}, status= status.HTTP_201_CREATED)
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def product_update(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    if product.user != request.user:
+        return Response({'message': 'You are not authorized to update this product!'}, status= status.HTTP_401_UNAUTHORIZED)
+    serializer = ProductSerializer(instance=product, data=request.data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response({'message': 'Product was updated successfully!', 'data': serializer.data}, status= status.HTTP_200_OK)
+    return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
