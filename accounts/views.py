@@ -11,7 +11,7 @@ def register(request):
     if serializer.is_valid():
         if not User.objects.filter(email = serializer.validated_data['email']).exists():
             user = User.objects.create_user(
-                username=serializer.validated_data['email'],
+                username=serializer.validated_data['email'].split('@')[0],
                 first_name = serializer.validated_data['first_name'],
                 last_name = serializer.validated_data['last_name'],
                 email = serializer.validated_data['email'],
