@@ -30,3 +30,16 @@ def register(request):
 def user_info(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# This endpoint allows the user to update their first name, last name, and/or password.
+# It requires the user to be authenticated (must provide a valid authentication token in their request).
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    serializer = UserSerializer(request.user, data=request.data, partial=True)
+    if serializer.is_valid():
+        if 'password' in serializer.validated_data:
+            request.user.set_password(serializer.validated_data['password'])
+        serializer.save()
+        return Response({'message': 'User updated successfully', 'user': serializer.data}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
