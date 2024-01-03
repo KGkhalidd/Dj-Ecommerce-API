@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # local apps
     'products.apps.ProductsConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 REST_FRAMEWORK = {
