@@ -43,3 +43,12 @@ def product_update(request, pk):
         serializer.save(user=request.user)
         return Response({'message': 'Product was updated successfully!', 'data': serializer.data}, status= status.HTTP_200_OK)
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def product_delete(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    if product.user != request.user:
+        return Response({'message': 'You are not authorized to update this product!'}, status= status.HTTP_401_UNAUTHORIZED)
+    product.delete()
+    return Response({'message': 'Product was deleted successfully!'}, status= status.HTTP_204_NO_CONTENT)
