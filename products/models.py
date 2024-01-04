@@ -29,11 +29,11 @@ class Review(models.Model):
     product = models.ForeignKey(Product, related_name = 'reviews' ,on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, null = True, on_delete=models.SET_NULL)
     comment = models.TextField(max_length=1000 ,default='', blank = False)
-    rating = models.DecimalField( max_digits=5, decimal_places=2, default=0.00,
-                                    validators=[MinValueValidator(0.00), MaxValueValidator(5.00)]
-                                    )
+    rating = models.DecimalField( max_digits=5, decimal_places=2,
+                                    validators=[MinValueValidator(0.00), MaxValueValidator(5.00)],
+                                    blank = False)
     created = models.DateTimeField(auto_now_add=True)
     
 
     def __str__(self):
-        return self.comment
+        return self.product.name + ' - ' + self.user.username
