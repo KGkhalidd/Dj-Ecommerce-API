@@ -81,3 +81,16 @@ def review_create_or_update(request, pk):
         product.save()
         return Response({'message': 'Review was created/updated successfully!', 'data': serializer.data}, status= status.HTTP_201_CREATED)
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def review_delete(request, pk):
+    review = get_object_or_404(Review, id=pk)
+    if review.user != request.user:
+        return Response({'message': 'You are not authorized to delete this review!'}, status= status.HTTP_401_UNAUTHORIZED)
+    product = review.product
+    review.delete()
+    avg_ratings = Review.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg']
+    product.ratings = avg_ratings
+    product.save()
+    return Response({'message': 'Review was deleted successfully!'}, status= status.HTTP_204_NO_CONTENT)
