@@ -1,12 +1,13 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Review
+from .serializers import ProductSerializer, ReviewSerializer
 from .filters import ProductFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Avg
 
 @api_view(['GET'])
 def product_list(request):
@@ -52,3 +53,31 @@ def product_delete(request, pk):
         return Response({'message': 'You are not authorized to update this product!'}, status= status.HTTP_401_UNAUTHORIZED)
     product.delete()
     return Response({'message': 'Product was deleted successfully!'}, status= status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_create_or_update(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    # .first() returns the first element in the queryset or None if the queryset is empty.
+    review =  Review.objects.filter(user= request.user, product=product).first()
+    # if no review exists, create a new one
+    if review is None:
+        serializer = ReviewSerializer(data=request.data)
+    # else update the existing one
+    else:
+        if review.user != request.user:
+            return Response({'message': 'You are not allowed to update this review.'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = ReviewSerializer(review, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save(user=request.user, product=product)
+        '''
+        calculate the average rating for the product
+        The aggregate function returns a dictionary where the key is the string passed to the Avg function 
+        appended with __avg and the value is the calculated average.
+        '''
+        avg_ratings = Review.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg']
+        product.ratings = avg_ratings
+        product.save()
+        return Response({'message': 'Review was created/updated successfully!', 'data': serializer.data}, status= status.HTTP_201_CREATED)
+    return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
