@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Category(models.TextChoices):
     ELECTRONICS = 'Electronics'
@@ -28,7 +29,9 @@ class Review(models.Model):
     product = models.ForeignKey(Product, related_name = 'reviews' ,on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, null = True, on_delete=models.SET_NULL)
     comment = models.TextField(max_length=1000 ,default='', blank = False)
-    rating = models.DecimalField( max_digits=5, decimal_places=2, default=0.00)
+    rating = models.DecimalField( max_digits=5, decimal_places=2, default=0.00,
+                                    validators=[MinValueValidator(0.00), MaxValueValidator(5.00)]
+                                    )
     created = models.DateTimeField(auto_now_add=True)
     
 
