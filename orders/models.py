@@ -25,14 +25,17 @@ class Order(models.Model):
     country = models.CharField(max_length=200, default='', blank = False)
     zip_code = models.CharField(max_length=200, default='', blank = False)
     phone = models.CharField(max_length=200, default='', blank = False)
-    total_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
+    total_cost = models.DecimalField(max_digits=7, null=True, decimal_places=2, default=0.00)
     status = models.CharField(max_length=40, choices=OrderStatus.choices, default=OrderStatus.PENDING)
     payment_status = models.CharField(max_length=40, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
     payment_method = models.CharField(max_length=40, choices=PaymentMethod.choices, default=PaymentMethod.CREDIT_CARD)
 
-
     def __str__(self):
         return f'Order #{self.id} - {self.user.username}'
+    
+    def get_total_cost(self):
+        total_cost = sum(item.get_cost() for item in self.items.all())
+        return total_cost
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name = 'items', on_delete=models.CASCADE)
@@ -42,3 +45,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.id} - {self.product.name}'
+    
+    def get_cost(self):
+        return self.quantity * self.price
