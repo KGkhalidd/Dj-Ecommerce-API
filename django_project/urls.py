@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/', include('products.urls')),
     path('api/', include('accounts.urls')),
     path('api/token/', TokenObtainPairView.as_view()),
+    path('api/', include('orders.urls')),
 ]
 
 handler404 = 'utils.error_view.handler404'
