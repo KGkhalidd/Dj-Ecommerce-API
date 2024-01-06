@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from .models import Order, OrderItem
 from products.models import Product
@@ -7,7 +8,7 @@ from .serializers import OrderSerializer, OrderItemSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-
+# list orders , create order
 class OrderView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -50,3 +51,10 @@ class OrderView(APIView):
         order.save()
         serializer = OrderSerializer(order, many=False)
         return Response({'message': 'Order created', 'order': serializer.data}, status=status.HTTP_201_CREATED)
+
+# get order by id, update order info not quantity or product , delete order
+class OrderDetailView(RetrieveUpdateDestroyAPIView):
+    queryset =  Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
