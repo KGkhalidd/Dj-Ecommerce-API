@@ -4,24 +4,30 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from .models import Order, OrderItem
 from products.models import Product
-from .serializers import OrderSerializer, OrderItemSerializer
+from .serializers import OrderSerializer
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 # list orders , create order
 class OrderView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # get all orders for the admin user
     def get(self, request):
+        if request.user.is_staff:
         # gets all orders for the logged in user
-        orders = Order.objects.filter(user=request.user)
-        if  not orders:
+            orders = Order.objects.all()
+        else:
+            orders = Order.objects.filter(user=request.user)
+        if not orders:
             return Response({'error': 'No orders found'}, status=status.HTTP_404_NOT_FOUND)
         # passes the orders to the serializer
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
     def post(self, request):
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
         # creates a new order for the logged in user
         data = request.data
         if 'order_items' not in request.data:
@@ -56,5 +62,5 @@ class OrderView(APIView):
 class OrderDetailView(RetrieveUpdateDestroyAPIView):
     queryset =  Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     lookup_field = 'id'
