@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import Product, Review
@@ -6,7 +6,7 @@ from .serializers import ProductSerializer, ReviewSerializer
 from .filters import ProductFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db.models import Avg
 
 @api_view(['GET'])
@@ -25,7 +25,7 @@ def product_detail(request, pk):
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def product_create(request):
     serializer = ProductSerializer(data=request.data)
     if serializer.is_valid():
@@ -34,7 +34,7 @@ def product_create(request):
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def product_update(request, pk):
     product = get_object_or_404(Product, id=pk)
     if product.user != request.user:
@@ -46,7 +46,7 @@ def product_update(request, pk):
     return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def product_delete(request, pk):
     product = get_object_or_404(Product, id=pk)
     if product.user != request.user:
