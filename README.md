@@ -57,5 +57,4 @@ Follow these steps to get started with the E-commerce API:
 4. Apply database migrations.
 5. Run the development server.
 
-For more instructions, refer to the [documentation](link-to-your-documentation).
 
